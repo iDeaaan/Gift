@@ -591,9 +591,41 @@
       .ticket-frame { width: 580px; }
       .hud          { font-size: 1.05rem; padding: 7px 18px; }
     }
+
+    /* ── CURSEUR ÉTOILE FILANTE ─────────────────────────────── */
+    html, body, * { cursor: none !important; }
+    #cursor {
+      position: fixed; z-index: 9999; pointer-events: none;
+      left: -100px; top: -100px; line-height: 1;
+      font-size: 1.2rem;
+      filter: drop-shadow(0 0 8px #ffd54f) drop-shadow(0 0 20px #ff8f00);
+      transform: translate(-50%, -50%) rotate(0deg);
+      will-change: left, top, transform;
+      transition: none;
+    }
+    .ctail {
+      position: fixed; pointer-events: none; z-index: 9997; border-radius: 50%;
+      width: var(--csz, 5px); height: var(--csz, 5px);
+      background: var(--cc, #ffd54f);
+      box-shadow: 0 0 5px var(--cc, #ffd54f), 0 0 12px var(--cc, #ffd54f);
+      transform: translate(-50%, -50%);
+      animation: ctailFade var(--ct, .5s) ease-out forwards;
+    }
+    @keyframes ctailFade {
+      0%   { opacity: .85; }
+      100% { opacity: 0; transform: translate(calc(-50% + var(--cdx,0px)), calc(-50% + var(--cdy,0px))) scale(0); }
+    }
+    /* Rétablit le curseur normal sur mobile (pas de souris) */
+    @media (hover: none) {
+      html, body, * { cursor: auto !important; }
+      #cursor { display: none; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- CURSEUR ÉTOILE FILANTE -->
+  <div id="cursor">⭐</div>
 
   <!-- STARFIELD -->
   <div id="starfield"></div>
@@ -912,6 +944,55 @@
       const t = e.touches[0]; if (t) rotate3d(t.clientX, t.clientY);
     }, { passive: true });
     document.addEventListener("touchend", resetRotate);
+
+    /* ── CURSEUR ÉTOILE FILANTE ──────────────────────────────── */
+    const cursorEl  = document.getElementById("cursor");
+    const TAIL_COLS = ["#ffd54f","#40c4ff","#f06292","#69f0ae","#ce93d8","#ffab40","#ffffff"];
+    let _px = 0, _py = 0, _lastTail = 0;
+
+    document.addEventListener("mousemove", e => {
+      const cx = e.clientX, cy = e.clientY;
+      cursorEl.style.left = cx + "px";
+      cursorEl.style.top  = cy + "px";
+
+      const dx = cx - _px, dy = cy - _py;
+      /* Rotation : l'étoile pointe dans la direction du mouvement */
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        cursorEl.style.transform = `translate(-50%,-50%) rotate(${angle + 45}deg)`;
+      }
+
+      /* Traînée — limitée à ~40 fps */
+      const now = Date.now();
+      if (now - _lastTail > 25) {
+        _lastTail = now;
+        spawnTail(cx, cy, dx, dy);
+        if (Math.hypot(dx, dy) > 6) spawnTail(cx, cy, dx, dy); /* 2e particule si rapide */
+        _px = cx; _py = cy;
+      }
+    }, { passive: true });
+
+    document.addEventListener("mouseleave", () => {
+      cursorEl.style.left = "-100px";
+    });
+
+    function spawnTail(x, y, dx, dy) {
+      const t   = document.createElement("div");
+      t.className = "ctail";
+      const sz  = Math.random() * 4 + 2;
+      const col = TAIL_COLS[Math.floor(Math.random() * TAIL_COLS.length)];
+      /* Position légèrement dispersée autour du curseur */
+      t.style.left = `${x + (Math.random() - .5) * 5}px`;
+      t.style.top  = `${y + (Math.random() - .5) * 5}px`;
+      t.style.setProperty("--csz", `${sz}px`);
+      t.style.setProperty("--cc",  col);
+      t.style.setProperty("--ct",  `${.3 + Math.random() * .35}s`);
+      /* La traînée part en sens opposé au mouvement (queue de comète) */
+      t.style.setProperty("--cdx", `${-dx * .5 + (Math.random() - .5) * 8}px`);
+      t.style.setProperty("--cdy", `${-dy * .5 + (Math.random() - .5) * 8}px`);
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 700);
+    }
   </script>
 </body>
 </html>
