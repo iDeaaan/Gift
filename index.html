@@ -1,0 +1,828 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eva 18 ans - Super Mario Galaxy 🌟</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ── PALETTE MARIO GALAXY ───────────────────────────── */
+    :root {
+      --space:   #01030e;
+      --deep:    #050b2e;
+      --purple:  #1a0040;
+      --gold:    #ffd54f;
+      --orange:  #ff8f00;
+      --cyan:    #40c4ff;
+      --pink:    #f06292;
+      --green:   #69f0ae;
+      --star:    #fffde7;
+      --paper-r: #b71c1c;
+      --paper-d: #7f0000;
+      --rosalina:#a8d8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── FOND ESPACE PROFOND ────────────────────────────── */
+    body {
+      min-height: 100vh;
+      font-family: "Nunito", sans-serif;
+      color: #fff;
+      overflow-x: hidden;
+      overflow-y: auto;
+      position: relative;
+      background:
+        radial-gradient(ellipse 70% 55% at 18% 8%,   rgba(64,196,255,.3),  transparent),
+        radial-gradient(ellipse 55% 65% at 83% 4%,   rgba(240,98,146,.25), transparent),
+        radial-gradient(ellipse 80% 55% at 50% 100%, rgba(105,240,174,.1), transparent),
+        radial-gradient(ellipse 60% 75% at 8%  90%,  rgba(255,213,79,.12), transparent),
+        linear-gradient(175deg, var(--space) 0%, var(--deep) 42%, var(--purple) 100%);
+    }
+
+    /* ── STARFIELD ──────────────────────────────────────── */
+    #starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .s {
+      position: absolute; border-radius: 50%; background: var(--star);
+      animation: twinkle var(--d) ease-in-out infinite;
+      animation-delay: var(--dl);
+    }
+    @keyframes twinkle {
+      0%,100% { opacity: .15; transform: scale(.5); }
+      50%      { opacity: 1;   transform: scale(2); }
+    }
+
+    /* ── PLANÈTES MARIO GALAXY ──────────────────────────── */
+    .planet {
+      position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+      animation: float var(--fd,10s) ease-in-out infinite;
+      animation-delay: var(--fdl,0s);
+    }
+    /* Anneau autour des planètes (comme dans le jeu) */
+    .planet-ring {
+      position: absolute; inset: -18px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,.18);
+      transform: rotateX(65deg);
+    }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+
+    /* ── NÉBULEUSES ─────────────────────────────────────── */
+    .neb {
+      position: fixed; border-radius: 50%; filter: blur(88px);
+      pointer-events: none; z-index: 0;
+      animation: pulse var(--pd,8s) ease-in-out infinite;
+      animation-delay: var(--pdl,0s);
+    }
+    @keyframes pulse { 0%,100%{opacity:.16;transform:scale(1)} 50%{opacity:.36;transform:scale(1.07)} }
+
+    /* ── LAUNCH STAR ring décoratif ─────────────────────── */
+    .launch-ring {
+      position: fixed; border-radius: 50%;
+      border: 2px solid rgba(64,196,255,.3); pointer-events: none; z-index: 0;
+      animation: lrFloat var(--lrf,14s) ease-in-out infinite, lrPulse var(--lrp,5s) ease-in-out infinite;
+      animation-delay: var(--lrdl,0s);
+    }
+    @keyframes lrFloat { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-15px) rotate(12deg)} }
+    @keyframes lrPulse {
+      0%,100% { border-color:rgba(64,196,255,.2); box-shadow:none; }
+      50%      { border-color:rgba(64,196,255,.7); box-shadow:0 0 22px rgba(64,196,255,.35); }
+    }
+
+    /* ── LUMA companions flottants ───────────────────────── */
+    .luma-float {
+      position: fixed; pointer-events: none; z-index: 1; font-size: var(--lsz,1.4rem);
+      animation: lumaWobble var(--ld,5s) ease-in-out infinite;
+      animation-delay: var(--ldl,0s);
+      filter: drop-shadow(0 0 5px var(--lc,#ffd54f));
+    }
+    @keyframes lumaWobble {
+      0%    { transform: translateY(0) rotate(-8deg); opacity: .7; }
+      33%   { transform: translateY(-14px) rotate(6deg); opacity: 1; }
+      66%   { transform: translateY(-8px) rotate(-4deg); opacity: .85; }
+      100%  { transform: translateY(0) rotate(-8deg); opacity: .7; }
+    }
+
+    /* ── HUD MARIO GALAXY (étoiles collectées) ───────────── */
+    .hud {
+      position: fixed; top: 14px; left: 16px; z-index: 16;
+      font-family: "Bangers", cursive; font-size: .95rem; letter-spacing: 1px;
+      color: var(--gold);
+      background: rgba(0,0,14,.7); border: 1px solid rgba(255,213,79,.45);
+      border-radius: 12px; padding: 6px 14px;
+      text-shadow: 0 0 12px rgba(255,213,79,.8);
+      backdrop-filter: blur(8px);
+      animation: hudGlow 3s ease-in-out infinite;
+      display: flex; align-items: center; gap: 8px;
+    }
+    @keyframes hudGlow { 0%,100%{box-shadow:0 0 8px rgba(255,213,79,.1)} 50%{box-shadow:0 0 20px rgba(255,213,79,.3)} }
+    .hud-star { font-size: 1.1rem; animation: hudStar 1.8s ease-in-out infinite; }
+    @keyframes hudStar { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3) rotate(20deg)} }
+
+    /* ── TICKER NOMS DE GALAXIES ─────────────────────────── */
+    .g-ticker {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 26px; z-index: 5;
+      background: rgba(0,0,12,.6); border-top: 1px solid rgba(64,196,255,.16);
+      display: flex; align-items: center; overflow: hidden;
+      backdrop-filter: blur(4px);
+    }
+    .g-ticker-inner {
+      white-space: nowrap; font-family: "Bangers", cursive;
+      font-size: .78rem; letter-spacing: 2.5px;
+      color: rgba(64,196,255,.6);
+      animation: tickScroll 42s linear infinite;
+    }
+    @keyframes tickScroll { 0%{transform:translateX(100vw)} 100%{transform:translateX(-100%)} }
+
+    /* ── STAR BITS (cristaux collectables) ───────────────── */
+    .sbit {
+      position: fixed; pointer-events: none; z-index: 36;
+      width: var(--sz,9px); height: var(--sz,9px);
+      clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+      background: var(--c);
+      box-shadow: 0 0 8px var(--c), 0 0 16px var(--c);
+      left: var(--x); top: var(--y);
+      animation: sbitFly var(--t) var(--d) ease-out forwards;
+    }
+    @keyframes sbitFly {
+      0%   { opacity: 1; transform: translate(0,0) scale(1) rotate(0deg); }
+      100% { opacity: 0; transform: translate(var(--dx),var(--dy)) scale(.08) rotate(var(--sp)); }
+    }
+
+    /* ── POWER STAR OBTENUE animation ────────────────────── */
+    .star-collected {
+      position: fixed; bottom: 7%; left: 50%;
+      transform: translateX(-50%); z-index: 60;
+      text-align: center; pointer-events: none;
+      animation: scSlide 4.2s cubic-bezier(.2,.8,.2,1) forwards;
+    }
+    .star-collected .sc-icon {
+      font-size: clamp(2.8rem, 8vw, 4.5rem); display: block;
+      animation: scSpin .95s ease-out forwards;
+      filter: drop-shadow(0 0 22px rgba(255,213,79,1));
+    }
+    .star-collected .sc-title {
+      font-family: "Bangers", cursive;
+      font-size: clamp(1.2rem, 3.5vw, 2rem);
+      color: var(--gold); letter-spacing: 2px; display: block; margin-top: 2px;
+      text-shadow: 0 0 25px rgba(255,213,79,1), 3px 3px 0 #4a2800;
+    }
+    .star-collected .sc-sub {
+      font-size: clamp(.8rem, 2vw, 1rem);
+      color: var(--cyan); letter-spacing: 1px; display: block;
+      text-shadow: 0 0 12px rgba(64,196,255,.9);
+    }
+    @keyframes scSlide {
+      0%  { opacity:0; transform:translateX(-50%) translateY(22px); }
+      12% { opacity:1; transform:translateX(-50%) translateY(0); }
+      78% { opacity:1; transform:translateX(-50%) translateY(0); }
+      100%{ opacity:0; transform:translateX(-50%) translateY(-22px); }
+    }
+    @keyframes scSpin {
+      0%   { transform:scale(0) rotate(-180deg); }
+      65%  { transform:scale(1.25) rotate(12deg); }
+      100% { transform:scale(1) rotate(0deg); }
+    }
+
+    /* ── INTRO ───────────────────────────────────────────── */
+    #intro {
+      position: fixed; inset: 0; z-index: 20;
+      display: grid; place-items: center;
+      background: radial-gradient(ellipse at 50% 28%, rgba(5,11,46,.97), rgba(1,3,14,.99) 70%);
+      transition: opacity .9s ease, visibility .9s ease;
+    }
+    #intro.hidden { opacity: 0; visibility: hidden; }
+
+    .intro-box {
+      width: min(94vw, 820px); text-align: center; padding: 24px 18px;
+      animation: introIn 1s cubic-bezier(.2,.8,.2,1);
+    }
+    @keyframes introIn { from{opacity:0;transform:translateY(28px) scale(.93)} to{opacity:1;transform:none} }
+
+    /* Badge "Observatoire de la Comète" */
+    .obs-badge {
+      display: inline-block;
+      font-family: "Bangers", cursive; letter-spacing: 3px;
+      font-size: clamp(.75rem, 1.8vw, 1rem);
+      color: var(--rosalina);
+      text-shadow: 0 0 18px rgba(168,216,240,.8), 0 0 40px rgba(168,216,240,.4);
+      border: 1px solid rgba(168,216,240,.4); border-radius: 999px;
+      padding: 4px 16px; margin-bottom: 6px;
+      animation: rosGlow 4s ease-in-out infinite;
+    }
+    @keyframes rosGlow {
+      0%,100% { box-shadow:0 0 8px rgba(168,216,240,.15); }
+      50%      { box-shadow:0 0 25px rgba(168,216,240,.5); }
+    }
+
+    /* Badge "SUPER MARIO GALAXY" */
+    .galaxy-badge {
+      display: inline-block; margin-bottom: 10px;
+      font-family: "Bangers", cursive; letter-spacing: 3px;
+      font-size: clamp(.9rem, 2.2vw, 1.3rem);
+      color: var(--gold);
+      text-shadow: 0 0 18px rgba(255,213,79,.9), 0 0 45px rgba(255,143,0,.5);
+      border: 1px solid rgba(255,213,79,.45); border-radius: 999px; padding: 5px 20px;
+      animation: badgeGlow 3.5s ease-in-out infinite;
+    }
+    @keyframes badgeGlow {
+      0%,100% { box-shadow:0 0 10px rgba(255,213,79,.15); }
+      50%      { box-shadow:0 0 30px rgba(255,213,79,.55); }
+    }
+
+    .main-title {
+      font-family: "Bangers", cursive;
+      font-size: clamp(3rem, 12vw, 7.5rem); line-height: .92; letter-spacing: 2px;
+      color: var(--gold);
+      text-shadow: 0 0 22px rgba(255,213,79,.85), 0 0 65px rgba(255,143,0,.6), 5px 5px 0 #4a2800;
+      animation: titlePulse 4s ease-in-out infinite;
+    }
+    @keyframes titlePulse {
+      0%,100% { text-shadow:0 0 22px rgba(255,213,79,.85),0 0 65px rgba(255,143,0,.6),5px 5px 0 #4a2800; }
+      50%      { text-shadow:0 0 45px rgba(255,213,79,1),0 0 110px rgba(255,143,0,.95),5px 5px 0 #4a2800; }
+    }
+
+    .rosalina-quote {
+      margin-top: 10px;
+      font-style: italic; font-size: clamp(.85rem, 2vw, 1.05rem); font-weight: 700;
+      color: rgba(168,216,240,.8); line-height: 1.5;
+      text-shadow: 0 0 14px rgba(168,216,240,.4);
+    }
+
+    .age-badge {
+      margin-top: 8px; font-family: "Bangers", cursive;
+      font-size: clamp(2.5rem, 8vw, 5.5rem);
+      color: var(--pink);
+      text-shadow: 0 0 30px rgba(240,98,146,.9), 0 0 65px rgba(240,98,146,.5);
+      animation: pinkPulse 2.8s ease-in-out infinite;
+    }
+    @keyframes pinkPulse {
+      0%,100% { text-shadow:0 0 30px rgba(240,98,146,.9),0 0 65px rgba(240,98,146,.5); }
+      50%      { text-shadow:0 0 55px rgba(240,98,146,1),0 0 110px rgba(240,98,146,.7); }
+    }
+
+    /* Lumas couleurs rangée d'intro */
+    .luma-row {
+      margin-top: 12px; font-size: clamp(1.8rem, 5vw, 3rem);
+      display: flex; justify-content: center; align-items: center; gap: 12px;
+    }
+    .luma-i {
+      display: inline-block;
+      filter: drop-shadow(0 0 8px var(--lc,#ffd54f));
+      animation: lumaI var(--lid,2.5s) ease-in-out infinite;
+      animation-delay: var(--lidl,0s);
+    }
+    @keyframes lumaI {
+      0%,100% { transform:translateY(0) rotate(-8deg) scale(1); }
+      50%      { transform:translateY(-10px) rotate(8deg) scale(1.18); }
+    }
+
+    /* Galaxy names mini row */
+    .gal-names {
+      margin-top: 8px; font-family: "Bangers", cursive;
+      font-size: clamp(.7rem, 1.6vw, .95rem); letter-spacing: 1.5px;
+      color: rgba(64,196,255,.55); display: flex; justify-content: center;
+      flex-wrap: wrap; gap: 6px 18px;
+    }
+    .gal-names span { white-space: nowrap; }
+
+    .start-btn {
+      margin-top: 18px; border: 0; border-radius: 999px;
+      padding: 15px 40px; font-family: "Bangers", cursive;
+      letter-spacing: 2px; font-size: clamp(1.1rem, 2.8vw, 1.6rem);
+      color: #2b1600;
+      background: linear-gradient(140deg, #ffe082, #ffb300 60%, #ff8f00);
+      box-shadow: 0 10px 0 #7a3e00, 0 16px 40px rgba(255,179,0,.5), inset 0 2px 0 rgba(255,255,255,.45);
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: transform .12s, box-shadow .12s;
+    }
+    .start-btn::after {
+      content:""; position:absolute; top:-50%; left:-60%; width:45%; height:200%;
+      background:rgba(255,255,255,.32); transform:skewX(-22deg);
+      animation:shine 3.5s 2s ease-in-out infinite;
+    }
+    @keyframes shine { 0%{left:-60%} 100%{left:130%} }
+    .start-btn:active { transform:translateY(5px); box-shadow:0 5px 0 #7a3e00,0 8px 18px rgba(255,179,0,.4); }
+
+    /* ── SCÈNE ──────────────────────────────────────────── */
+    #scene {
+      position: relative; z-index: 2; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px 14px 38px; opacity: 0; transition: opacity .9s ease;
+    }
+    #scene.show { opacity: 1; }
+
+    .gal-label {
+      font-family: "Bangers", cursive; letter-spacing: 3px;
+      font-size: clamp(.75rem, 1.8vw, 1rem); color: rgba(168,216,240,.65);
+      text-shadow: 0 0 14px rgba(168,216,240,.5); margin-bottom: 4px;
+    }
+    .scene-title {
+      font-family: "Bangers", cursive; letter-spacing: 2px; text-align: center;
+      font-size: clamp(1rem, 2.4vw, 1.7rem); margin-bottom: 14px;
+      color: var(--gold); text-shadow: 0 0 20px rgba(255,213,79,.7);
+      animation: ctGlow 3s ease-in-out infinite;
+    }
+    @keyframes ctGlow { 0%,100%{opacity:.85} 50%{opacity:1} }
+
+    /* ── CADRE TICKET ────────────────────────────────────── */
+    .ticket-frame {
+      width: min(560px, 88vw); position: relative; border-radius: 26px; padding: 5px;
+      background: conic-gradient(from var(--angle,0deg),
+        #ffd54f, #ff8f00, #f06292, #40c4ff, #69f0ae, #ffd54f);
+      animation: borderSpin 4s linear infinite;
+      box-shadow: 0 0 45px rgba(255,213,79,.4), 0 0 85px rgba(64,196,255,.2), 0 30px 80px rgba(0,0,0,.7);
+    }
+    @property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+    @keyframes borderSpin { to { --angle: 360deg; } }
+
+    .card-inner { border-radius: 22px; position: relative; background: #0a0f2e; }
+
+    .card3d {
+      width: 100%; aspect-ratio: 0.707 / 1; border-radius: 22px;
+      transform-style: preserve-3d; transition: transform .1s linear;
+      position: relative; perspective: 1400px;
+    }
+
+    .ticket-face {
+      position: absolute; inset: 0; border-radius: 22px; background: #08102a;
+    }
+
+    /* ── FLIP CARD RECTO / VERSO ──────────────────────── */
+    .flip-inner {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform .8s cubic-bezier(.4,0,.2,1);
+      border-radius: 22px;
+    }
+    .flip-inner.flipped { transform: rotateY(180deg); }
+
+    .card-face {
+      position: absolute; inset: 0; border-radius: 22px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      overflow: hidden;
+    }
+    .card-face img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
+      display: block;
+      user-select: none; -webkit-user-drag: none;
+    }
+    /* Reflet holographique Power Star sur chaque face */
+    .card-face::after {
+      content:""; position:absolute; inset:0; pointer-events:none; z-index:3; border-radius:22px;
+      background:
+        linear-gradient(130deg, rgba(255,255,255,.22) 0%, transparent 42%),
+        radial-gradient(ellipse at 72% 18%, rgba(64,196,255,.18), transparent 50%);
+    }
+    .card-back { transform: rotateY(180deg); }
+
+    /* Indicateur flip */
+    .flip-hint {
+      position: absolute; bottom: 50px; left: 0; right: 0;
+      text-align: center; font-family: "Bangers", cursive;
+      font-size: clamp(.75rem, 1.8vw, 1rem); letter-spacing: 1px;
+      color: rgba(255,213,79,.8); pointer-events: none; z-index: 4;
+      animation: flipHintBlink 2.4s ease-in-out infinite;
+    }
+    @keyframes flipHintBlink { 0%,100%{opacity:.35} 50%{opacity:1} }
+
+    /* ── PAPIER CADEAU ────────────────────────────────────── */
+    .gift {
+      position: absolute; inset: 0; border-radius: 22px; overflow: hidden;
+      z-index: 10; cursor: pointer; user-select: none; touch-action: manipulation;
+    }
+    .paper-bg {
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(45deg,
+        var(--paper-r) 0, var(--paper-r) 20px,
+        var(--paper-d) 20px, var(--paper-d) 40px);
+    }
+    .paper-bg::before {
+      content:""; position:absolute; inset:0;
+      background-image:
+        radial-gradient(circle, rgba(255,213,79,.9) 2.8px, transparent 2.8px),
+        radial-gradient(circle, rgba(168,216,240,.5) 1.5px, transparent 1.5px);
+      background-size: 54px 54px, 30px 30px;
+      background-position: 6px 6px, 0 0; opacity: .85;
+    }
+    /* Star Bits dessinés sur le papier */
+    .paper-bits {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: flex-end;
+      flex-wrap: wrap; padding: 10px;
+      pointer-events: none; opacity: .2; gap: 8px;
+      font-size: 1rem;
+    }
+    .rib-h, .rib-v {
+      position: absolute;
+      background: linear-gradient(180deg, #ffe082, #ff8f00, #ffe082);
+      box-shadow: 0 0 20px rgba(255,179,0,.7);
+    }
+    .rib-h { top:50%; left:0; right:0; height:34px; transform:translateY(-50%); }
+    .rib-v { left:50%; top:0; bottom:0; width:34px; transform:translateX(-50%); }
+
+    /* Noeud avec Luma au centre */
+    .bow {
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:120px; height:120px;
+      filter:drop-shadow(0 8px 14px rgba(0,0,0,.45)); z-index:2;
+    }
+    .lobe {
+      position:absolute; width:56px; height:48px;
+      border-radius:50% 50% 50% 50%/42% 42% 58% 58%;
+      background:radial-gradient(circle at 30% 30%,#ffe082,#ff6f00);
+      box-shadow:inset 0 -4px 10px rgba(0,0,0,.3);
+    }
+    .lobe:nth-child(1){top:0;left:0;transform:rotate(-34deg);}
+    .lobe:nth-child(2){top:0;right:0;transform:rotate(34deg);}
+    .lobe:nth-child(3){bottom:0;left:0;transform:rotate(34deg);}
+    .lobe:nth-child(4){bottom:0;right:0;transform:rotate(-34deg);}
+    .bow-center {
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:34px; height:34px; border-radius:50%;
+      background:radial-gradient(circle at 28% 28%,#fffde7,#ff6f00);
+      box-shadow:0 0 18px rgba(255,213,79,.9); z-index:3;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.1rem;
+    }
+    .bow-pulse {
+      position:absolute; inset:-14px; border-radius:50%;
+      border:2px solid rgba(255,213,79,.6);
+      animation:bowring 2s ease-in-out infinite;
+    }
+    @keyframes bowring { 0%{transform:scale(.8);opacity:1} 100%{transform:scale(1.6);opacity:0} }
+
+    .gift-label {
+      position:absolute; bottom:14px; left:0; right:0; text-align:center;
+      font-family:"Bangers",cursive; font-size:clamp(.85rem,2vw,1.15rem); letter-spacing:2px;
+      color:var(--gold); text-shadow:0 0 10px rgba(0,0,0,.9),2px 2px 0 rgba(0,0,0,.7);
+    }
+
+    /* Déchirure */
+    .piece {
+      position:absolute; overflow:hidden; border-radius:10px;
+      animation:tearfly var(--dur,.95s) cubic-bezier(.28,.06,.52,1.02) forwards;
+      pointer-events:none;
+    }
+    @keyframes tearfly {
+      0%  {opacity:1;transform:translate(0,0) rotate(0deg) scale(1);}
+      100%{opacity:0;transform:translate(var(--tx),var(--ty)) rotate(var(--r)) scale(.1);}
+    }
+    .gift.opening { animation:giftVanish .6s ease forwards; }
+    @keyframes giftVanish { to{opacity:0;transform:scale(.88);} }
+
+    /* ── TEXTES BAS ──────────────────────────────────────── */
+    .hint {
+      margin-top:10px; font-size:.95rem; text-align:center; min-height:1.4em;
+      color:rgba(255,255,255,.9); font-weight:700;
+    }
+    .drag-tip {
+      margin-top:5px; font-size:.88rem; text-align:center; opacity:0;
+      transform:translateY(8px); transition:opacity .45s ease,transform .45s ease;
+      color:var(--cyan); font-weight:700;
+    }
+    .drag-tip.show{opacity:1;transform:none;}
+
+    /* Coins dorés ───────────────────────────────────────── */
+    .gc { position:absolute; width:28px; height:28px; pointer-events:none; z-index:4; }
+    .gc span { position:absolute; background:var(--gold); display:block; border-radius:2px; }
+    .gc.tl{top:10px;left:10px;} .gc.tr{top:10px;right:10px;} .gc.bl{bottom:10px;left:10px;} .gc.br{bottom:10px;right:10px;}
+
+    /* scrollbar custom PDF */
+    .pdf-viewer::-webkit-scrollbar{width:5px;}
+    .pdf-viewer::-webkit-scrollbar-thumb{background:rgba(255,213,79,.3);border-radius:3px;}
+
+    @media(max-width:700px){
+      .ticket-frame{width:95vw;}
+      .card3d{aspect-ratio:0.707/1;}
+      .bow{width:90px;height:90px;}
+      .rib-h{height:26px;} .rib-v{width:26px;}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- STARFIELD -->
+  <div id="starfield"></div>
+
+  <!-- NÉBULEUSES COSMIQUES -->
+  <div class="neb" style="width:700px;height:500px;background:rgba(26,0,64,.6);top:-140px;left:-210px;--pd:9s;"></div>
+  <div class="neb" style="width:560px;height:430px;background:rgba(0,50,170,.24);bottom:-100px;right:-140px;--pd:11s;--pdl:4s;"></div>
+  <div class="neb" style="width:320px;height:320px;background:rgba(240,98,146,.15);top:28%;right:2%;--pd:7s;--pdl:2s;"></div>
+  <div class="neb" style="width:260px;height:260px;background:rgba(105,240,174,.1);bottom:14%;left:4%;--pd:8.5s;--pdl:1s;"></div>
+
+  <!-- PLANÈTES MARIO GALAXY (Good Egg, Beach Bowl, Freezeflame, Gusty Garden...) -->
+  <!-- Good Egg Galaxy — planète verte -->
+  <div class="planet" style="width:90px;height:90px;top:6%;right:5%;background:radial-gradient(circle at 32% 28%,#81d4a4,#1b5e20);box-shadow:0 0 28px rgba(27,94,32,.55);--fd:11s;">
+    <div class="planet-ring"></div>
+  </div>
+  <!-- Beach Bowl Galaxy — planète bleue eau -->
+  <div class="planet" style="width:58px;height:58px;top:68%;left:3%;background:radial-gradient(circle at 35% 30%,#80deea,#006064);box-shadow:0 0 20px rgba(0,96,100,.5);--fd:8s;--fdl:2s;"></div>
+  <!-- Freezeflame Galaxy — planète orange/feu -->
+  <div class="planet" style="width:42px;height:42px;bottom:10%;right:7%;background:radial-gradient(circle at 35% 30%,#ffcc80,#bf360c);box-shadow:0 0 16px rgba(191,54,12,.5);--fd:13s;--fdl:4s;"></div>
+  <!-- Dusty Dune Galaxy — planète sable/violet -->
+  <div class="planet" style="width:28px;height:28px;top:44%;left:1.5%;background:radial-gradient(circle at 30% 28%,#ce93d8,#4a148c);box-shadow:0 0 12px rgba(74,20,140,.55);--fd:9s;--fdl:6s;"></div>
+
+  <!-- LAUNCH STAR rings décoratifs (anneaux de lancement) -->
+  <div class="launch-ring" style="width:160px;height:160px;top:8%;left:12%;--lrf:14s;--lrp:5s;--lrdl:0s;"></div>
+  <div class="launch-ring" style="width:90px;height:90px;bottom:18%;right:14%;--lrf:10s;--lrp:4s;--lrdl:2s;border-color:rgba(255,213,79,.3);"></div>
+  <div class="launch-ring" style="width:50px;height:50px;top:55%;right:4%;--lrf:8s;--lrp:3s;--lrdl:3.5s;border-color:rgba(240,98,146,.35);"></div>
+
+  <!-- LUMAS flottants (compagnons étoiles) -->
+  <div class="luma-float" style="top:14%;left:7%;--ld:5s;--ldl:0s;--lsz:1.6rem;--lc:#ffd54f;">⭐</div>
+  <div class="luma-float" style="top:21%;right:11%;--ld:4.2s;--ldl:1.4s;--lsz:1.1rem;--lc:#80deea;">⭐</div>
+  <div class="luma-float" style="bottom:22%;left:8%;--ld:6s;--ldl:.8s;--lsz:1.4rem;--lc:#f06292;">⭐</div>
+  <div class="luma-float" style="bottom:13%;right:9%;--ld:5.5s;--ldl:3s;--lsz:.9rem;--lc:#ce93d8;">⭐</div>
+  <div class="luma-float" style="top:50%;left:.8%;--ld:7s;--ldl:2s;--lsz:.85rem;--lc:#69f0ae;">⭐</div>
+
+  <!-- HUD Mario Galaxy — compteur étoiles -->
+  <div class="hud">
+    <span class="hud-star">⭐</span>
+    <span>1 / 120 ÉTOILES</span>
+  </div>
+
+  <!-- TICKER — noms de galaxies en bas -->
+  <div class="g-ticker">
+    <div class="g-ticker-inner">
+      &nbsp;&nbsp;&nbsp;✦ GOOD EGG GALAXY &nbsp;·&nbsp; HONEYHIVE GALAXY &nbsp;·&nbsp; SPACE JUNK GALAXY &nbsp;·&nbsp; GUSTY GARDEN GALAXY &nbsp;·&nbsp; FREEZEFLAME GALAXY &nbsp;·&nbsp; TOY TIME GALAXY &nbsp;·&nbsp; BEACH BOWL GALAXY &nbsp;·&nbsp; DUSTY DUNE GALAXY &nbsp;·&nbsp; GOLD LEAF GALAXY &nbsp;·&nbsp; BUOY BASE GALAXY &nbsp;·&nbsp; BOWSER'S GALAXY REACTOR &nbsp;·&nbsp; COMET OBSERVATORY &nbsp;&nbsp;&nbsp;
+    </div>
+  </div>
+
+  <!-- ── INTRO MARIO GALAXY ─────────────────────────────── -->
+  <section id="intro">
+    <div class="intro-box">
+      <div class="obs-badge">🌌 OBSERVATOIRE DE LA COMÈTE 🌌</div>
+      <div class="galaxy-badge">✦ SUPER MARIO GALAXY ✦</div>
+      <h1 class="main-title">Joyeux<br>Anniversaire<br>Eva&nbsp;!</h1>
+      <p class="rosalina-quote">
+        « Chaque étoile est une mémoire du cosmos.<br>
+        &nbsp;&nbsp;Harmonie a gardé la tienne toute l'année. »
+      </p>
+      <p class="age-badge">18 ANS ⭐</p>
+      <div class="luma-row">
+        <span class="luma-i" style="--lc:#ffd54f;--lid:2.4s;--lidl:0s;">⭐</span>
+        <span class="luma-i" style="--lc:#80deea;--lid:2.8s;--lidl:.3s;">⭐</span>
+        <span class="luma-i" style="--lc:#f06292;--lid:2.2s;--lidl:.6s;">⭐</span>
+        <span class="luma-i" style="--lc:#ce93d8;--lid:3s;--lidl:.9s;">⭐</span>
+        <span class="luma-i" style="--lc:#69f0ae;--lid:2.6s;--lidl:1.2s;">⭐</span>
+      </div>
+      <div class="gal-names">
+        <span>Good Egg Galaxy</span><span>Gusty Garden Galaxy</span>
+        <span>Honeyhive Galaxy</span><span>Toy Time Galaxy</span>
+        <span>Comet Observatory</span>
+      </div>
+      <button class="start-btn" id="startBtn">⭐ Collecter l'Étoile de Puissance !</button>
+    </div>
+  </section>
+
+  <!-- ── SCÈNE — TICKET SOUS EMBALLAGE ───────────────────── -->
+  <main id="scene">
+    <p class="gal-label">✦ GOOD EGG GALAXY — GRAND STAR ✦</p>
+    <h2 class="scene-title">⭐ Déchire l'emballage pour obtenir ton Étoile de Puissance !</h2>
+
+    <div class="ticket-frame">
+      <div class="card-inner">
+        <div class="card3d" id="card3d">
+
+          <!-- Carte recto / verso -->
+          <div class="ticket-face">
+            <div class="flip-inner" id="flipInner">
+              <div class="card-face card-front">
+                <img src="recto.png" alt="Recto" draggable="false" />
+              </div>
+              <div class="card-face card-back">
+                <img src="verso.png" alt="Verso" draggable="false" />
+              </div>
+            </div>
+            <div class="flip-hint" id="flipHint" style="display:none;">⭐ Clique pour retourner la carte ⭐</div>
+          </div>
+
+          <!-- Coins dorés -->
+          <div class="gc tl"><span style="width:4px;height:20px;top:0;left:0;"></span><span style="width:20px;height:4px;top:0;left:0;"></span></div>
+          <div class="gc tr"><span style="width:4px;height:20px;top:0;right:0;"></span><span style="width:20px;height:4px;top:0;right:0;"></span></div>
+          <div class="gc bl"><span style="width:4px;height:20px;bottom:0;left:0;"></span><span style="width:20px;height:4px;bottom:0;left:0;"></span></div>
+          <div class="gc br"><span style="width:4px;height:20px;bottom:0;right:0;"></span><span style="width:20px;height:4px;bottom:0;right:0;"></span></div>
+
+          <!-- Petits Lumas coin déco -->
+          <span style="position:absolute;top:7px;left:38px;font-size:.85rem;pointer-events:none;z-index:4;filter:drop-shadow(0 0 5px #ffd54f);animation:lumaWobble 4s ease-in-out infinite;">⭐</span>
+          <span style="position:absolute;top:7px;right:38px;font-size:.85rem;pointer-events:none;z-index:4;filter:drop-shadow(0 0 5px #80deea);animation:lumaWobble 5s ease-in-out infinite 1s;">⭐</span>
+
+          <!-- PAPIER CADEAU MARIO GALAXY -->
+          <div class="gift" id="gift" tabindex="0" role="button" aria-label="Ouvrir le cadeau">
+            <div class="paper-bg"></div>
+            <!-- Star Bits sur le papier -->
+            <div class="paper-bits">⭐ ⭐ ⭐ ⭐ ⭐ ⭐ ⭐ ⭐ ⭐ ⭐ ⭐ ⭐ ⭐</div>
+            <div class="rib-h"></div>
+            <div class="rib-v"></div>
+            <div class="bow">
+              <div class="lobe"></div>
+              <div class="lobe"></div>
+              <div class="lobe"></div>
+              <div class="lobe"></div>
+              <div class="bow-center">
+                ⭐
+                <div class="bow-pulse"></div>
+              </div>
+            </div>
+            <div class="gift-label">⭐ EVA — GRAND STAR SECRÈTE ⭐</div>
+          </div>
+
+        </div><!-- /.card3d -->
+      </div><!-- /.card-inner -->
+    </div><!-- /.ticket-frame -->
+
+    <p class="hint" id="hint">⭐ 4 clics pour déchirer l'emballage !</p>
+    <p class="drag-tip" id="drag">🖱️ Bouge la souris sur ton ticket pour le manier en 3D !</p>
+  </main>
+
+  <script>
+    /* ── STARFIELD ────────────────────────────────────────── */
+    const sf = document.getElementById("starfield");
+    for (let i = 0; i < 280; i++) {
+      const s = document.createElement("span");
+      s.className = "s";
+      const sz = Math.random() * 2.5 + .4;
+      s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*3.5}s;--dl:${Math.random()*3}s;`;
+      sf.appendChild(s);
+    }
+
+    /* ── INTRO → SCÈNE ────────────────────────────────────── */
+    document.getElementById("startBtn").addEventListener("click", () => {
+      document.getElementById("intro").classList.add("hidden");
+      document.getElementById("scene").classList.add("show");
+      spawnStarBits(60, window.innerWidth / 2, window.innerHeight / 2);
+    });
+
+    /* ── STAR BITS (remplacent les confettis) ─────────────── */
+    /* Couleurs des Star Bits du jeu : bleu, jaune, rouge, vert, violet */
+    const BIT_COLORS = ["#40c4ff","#ffd54f","#ef5350","#69f0ae","#ce93d8","#ffab40","#ffffff"];
+
+    function spawnStarBits(n, ox, oy) {
+      for (let i = 0; i < n; i++) {
+        const b = document.createElement("span");
+        b.className = "sbit";
+        const sz = Math.random() * 10 + 5;
+        const col = BIT_COLORS[Math.floor(Math.random() * BIT_COLORS.length)];
+        const dx = (Math.random() - .5) * 400;
+        const dy = (Math.random() - .5) * 350 - 80;
+        const sp = (Math.random() - .5) * 720;
+        b.style.setProperty("--sz",  `${sz}px`);
+        b.style.setProperty("--c",   col);
+        b.style.setProperty("--x",   `${ox + (Math.random()-.5)*60}px`);
+        b.style.setProperty("--y",   `${oy + (Math.random()-.5)*40}px`);
+        b.style.setProperty("--dx",  `${dx}px`);
+        b.style.setProperty("--dy",  `${dy}px`);
+        b.style.setProperty("--sp",  `${sp}deg`);
+        b.style.setProperty("--t",   `${1.4 + Math.random() * 1.6}s`);
+        b.style.setProperty("--d",   `${Math.random() * .6}s`);
+        document.body.appendChild(b);
+        setTimeout(() => b.remove(), 3400);
+      }
+    }
+
+    /* ── HUD COUNTER ──────────────────────────────────────── */
+    let starCount = 1;
+    function updateHud(n) {
+      starCount = n;
+      document.querySelector(".hud").innerHTML =
+        `<span class="hud-star">⭐</span><span>${n} / 120 ÉTOILES</span>`;
+    }
+
+    /* ── DÉCHIRURE PAPIER ─────────────────────────────────── */
+    const gift      = document.getElementById("gift");
+    const card3d    = document.getElementById("card3d");
+    const flipInner = document.getElementById("flipInner");
+    const flipHint  = document.getElementById("flipHint");
+    const hint      = document.getElementById("hint");
+    const drag      = document.getElementById("drag");
+    let tears = 0, opened = false, can3d = false, isFlipped = false;
+
+    const zones = [
+      { l:0,  t:0,  w:50, h:50, tx:"-215px", ty:"-185px", r:"-38deg" },
+      { l:50, t:0,  w:50, h:50, tx:"215px",  ty:"-185px", r:"38deg"  },
+      { l:0,  t:50, w:50, h:50, tx:"-215px", ty:"185px",  r:"32deg"  },
+      { l:50, t:50, w:50, h:50, tx:"215px",  ty:"185px",  r:"-32deg" }
+    ];
+
+    const tearMsgs = [
+      "⭐ Crack ! +1 Star Bit !",
+      "💫 Déchire ! La galaxie tremble !",
+      "🌟 Encore ! Harmonie observe !",
+      "✨ Ouverture de la Grand Star..."
+    ];
+
+    function makePiece(z) {
+      const p = document.createElement("div");
+      p.className = "piece";
+      p.style.left = `${z.l}%`; p.style.top = `${z.t}%`;
+      p.style.width = `${z.w}%`; p.style.height = `${z.h}%`;
+      p.style.setProperty("--tx", z.tx);
+      p.style.setProperty("--ty", z.ty);
+      p.style.setProperty("--r",  z.r);
+      p.innerHTML = `<div class="paper-bg"></div><div class="rib-h"></div><div class="rib-v"></div>`;
+      gift.appendChild(p);
+      setTimeout(() => p.remove(), 1100);
+    }
+
+    function showPowerStarCollected() {
+      const el = document.createElement("div");
+      el.className = "star-collected";
+      el.innerHTML = `
+        <span class="sc-icon">⭐</span>
+        <span class="sc-title">ÉTOILE DE PUISSANCE OBTENUE !</span>
+        <span class="sc-sub">Good Egg Galaxy — Grand Star #1</span>
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4500);
+    }
+
+    function openGift() {
+      opened = true;
+      gift.classList.add("opening");
+      hint.textContent = "✨ Ouverture en cours...";
+      drag.classList.add("show");
+      updateHud(2);
+
+      /* Star Bits en explosion depuis le centre du ticket */
+      const r = card3d.getBoundingClientRect();
+      spawnStarBits(180, r.left + r.width / 2, r.top + r.height / 2);
+
+      setTimeout(() => {
+        gift.style.display = "none";
+        can3d = true;
+        flipHint.style.display = "block";
+        hint.textContent = "⭐ Recto — Clique la carte pour voir le verso !";
+        showPowerStarCollected();
+        /* Active le flip au clic sur la carte révélée */
+        flipInner.addEventListener("click", flipCard);
+        flipInner.style.cursor = "pointer";
+      }, 640);
+    }
+
+    /* ── FLIP RECTO / VERSO ─────────────────────────────────── */
+    function flipCard() {
+      isFlipped = !isFlipped;
+      flipInner.classList.toggle("flipped");
+      /* Star Bits au retournement */
+      const r = card3d.getBoundingClientRect();
+      spawnStarBits(38, r.left + r.width / 2, r.top + r.height / 2);
+      hint.textContent = isFlipped
+        ? "🌟 Verso — Clique pour revoir le recto !"
+        : "⭐ Recto — Clique pour voir le verso !";
+      updateHud(isFlipped ? 3 : 2);
+    }
+
+    function tear() {
+      if (opened) return;
+      tears++;
+      if (tears <= 4) makePiece(zones[tears - 1]);
+
+      /* Spray de Star Bits à l'endroit du clic */
+      const r = gift.getBoundingClientRect();
+      spawnStarBits(22, r.left + r.width / 2, r.top + r.height / 2);
+
+      const left = Math.max(0, 4 - tears);
+      hint.textContent = tears <= 4 ? tearMsgs[tears - 1] : "✨ Ouverture...";
+      if (left > 0) {
+        setTimeout(() => {
+          if (!opened) hint.textContent = `⭐ ${left} clic${left > 1 ? "s" : ""} restant${left > 1 ? "s" : ""} !`;
+        }, 1200);
+      }
+      if (tears >= 4) openGift();
+    }
+
+    gift.addEventListener("click", tear);
+    gift.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tear(); }
+    });
+
+    /* ── 3D à la souris / tactile ─────────────────────────── */
+    function rotate3d(x, y) {
+      if (!can3d) return;
+      const r = card3d.getBoundingClientRect();
+      const dx = (x - (r.left + r.width  / 2)) / (r.width  / 2);
+      const dy = (y - (r.top  + r.height / 2)) / (r.height / 2);
+      const ry = Math.max(-18, Math.min(18, dx * 18));
+      const rx = Math.max(-12, Math.min(12, -dy * 12));
+      card3d.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) scale(1.015)`;
+    }
+    function resetRotate() {
+      if (!can3d) return;
+      card3d.style.transition = "transform .5s ease";
+      card3d.style.transform  = "rotateX(0) rotateY(0) scale(1)";
+      setTimeout(() => card3d.style.transition = "transform .1s linear", 520);
+    }
+
+    document.addEventListener("mousemove",  e => rotate3d(e.clientX, e.clientY));
+    document.addEventListener("mouseleave", resetRotate);
+    document.addEventListener("touchmove",  e => {
+      const t = e.touches[0]; if (t) rotate3d(t.clientX, t.clientY);
+    }, { passive: true });
+    document.addEventListener("touchend", resetRotate);
+  </script>
+</body>
+</html>
